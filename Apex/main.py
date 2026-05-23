@@ -8,10 +8,10 @@ import time
 import threading
 from datetime import datetime, timezone, timedelta
 
-from flask import Flask, render_template
+from flask import Flask, send_file
 from flask_socketio import SocketIO
 
-from feed import get_candles
+from feed import get_ohlcv as get_candles
 from strategy import get_signal
 from portfolio import open_trade, check_and_close, get_summary, INITIAL_CAPITAL
 
@@ -23,8 +23,8 @@ socketio = SocketIO(app, cors_allowed_origins="*", async_mode="threading")
 # ── Timezone Buenos Aires (UTC-3) ──
 TZ_BA = timezone(timedelta(hours=-3))
 
-SYMBOLS    = ["BTC/USD", "ETH/USD", "SOL/USD"]   # ADA y XRP removidos
-INTERVAL   = "5"    # velas de 5 minutos
+SYMBOLS    = ["BTC/USD", "ETH/USD", "SOL/USD"]
+INTERVAL   = 5      # velas de 5 minutos (entero, no string)
 LOOP_SLEEP = 60     # segundos entre iteraciones del bot
 
 
@@ -67,7 +67,6 @@ def bot_loop() -> None:
                         "exit":       closed["exit"],
                         "pnl":        round(closed["pnl"], 2),
                         "reason":     closed["reason"],
-                        # Timestamps ya en UTC-3
                         "opened_at":  closed["opened_at"].strftime("%H:%M:%S"),
                         "closed_at":  closed["closed_at"].strftime("%H:%M:%S"),
                         "time":       closed["closed_at"].strftime("%H:%M:%S"),
@@ -104,7 +103,7 @@ def bot_loop() -> None:
 # ── Rutas Flask ──
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return send_file("index.html")
 
 
 @app.route("/health")
