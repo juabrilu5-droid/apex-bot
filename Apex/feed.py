@@ -93,3 +93,4 @@ def get_all_prices() -> dict:
         if p:
             prices[symbol] = p
     return prices
+get_candles = get_ohlcv  # alias para compatibilidad con main.py
